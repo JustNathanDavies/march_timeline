@@ -59,7 +59,7 @@ let basemap = null;
 let imgRect = null;     // where the basemap is drawn, in pixels
 
 async function setup() {
-  createCanvas(1000, 700);     // <- swap for createCanvas(800,600) for a fixed size
+  createCanvas(1100, 700);     // <- swap for createCanvas(800,600) for a fixed size
 
   basemap = await loadImage(MAP_FILE);
   const route = await loadJSON(ROUTE_FILE);
@@ -99,21 +99,21 @@ function geoToPx(x, y) {
 }
 
 function layout() {
-  trackX   = width - TRACK_INSET;
+  trackX   = TRACK_INSET;              // scrubber on the LEFT
   trackTop = PAD;
   trackBot = height - PAD;
-  timeX    = trackX - TIME_GAP;        // time axis between the scrubber and the map
+  timeX    = trackX + TIME_GAP;        // time axis just right of the scrubber
 
-  const areaX = PAD, areaY = PAD;
-  const areaRight = timeX - GAP;       // map sits GAP to the left of the time axis
-  const areaW = areaRight - areaX;
+  const areaY = PAD;
+  const areaLeft = timeX + GAP;        // map sits GAP to the right of the time axis
+  const areaW = (width - PAD) - areaLeft;
   const areaH = height - 2 * PAD;
 
   // transform is driven by the basemap's extent, so the route + points land on the map
   const mW = MAP_MAXX - MAP_MINX, mH = MAP_MAXY - MAP_MINY;
   const s = min(areaW / mW, areaH / mH);
   const drawW = mW * s, drawH = mH * s;
-  const offX = areaRight - drawW;             // anchor the map's right edge near the track
+  const offX = areaLeft;                      // anchor the map's LEFT edge near the time axis
   const offY = areaY + (areaH - drawH) / 2;   // centre vertically
 
   T = { minX: MAP_MINX, maxY: MAP_MAXY, s, offX, offY };
@@ -208,26 +208,26 @@ function drawDot(x, y, d, col) {
 
 function videoRect(p) {
   const vw = p.vid.elt.videoWidth || 16, vh = p.vid.elt.videoHeight || 9;
-  const rightX  = imgRect.x - FRAME_MAP_GAP;          // bottom-right corner x: 100px left of the map
-  const bottomY = imgRect.y + imgRect.h;             // shared bottom-right corner y = map bottom edge
+  const leftX   = imgRect.x + imgRect.w + FRAME_MAP_GAP;  // bottom-left corner x: right of the map
+  const bottomY = imgRect.y + imgRect.h;                  // shared bottom-left corner y = map bottom edge
 
   const s = imgRect.h * VIDEO_SCALE / max(vw, vh);    // longer side == 75% of map height
   const w = vw * s, h = vh * s;
-  return { x: rightX - w, y: bottomY - h, w, h };     // all clips share the bottom-right corner (grow up & left)
+  return { x: leftX, y: bottomY - h, w, h };          // all clips share the bottom-left corner (grow up & right)
 }
 
 function drawSightBeam(p, r) {
-  const trX = r.x + r.w, trY = r.y;            // top-right corner of the frame
-  const brX = r.x + r.w, brY = r.y + r.h;      // bottom-right corner
+  const tlX = r.x, tlY = r.y;                  // top-left corner of the frame
+  const blX = r.x, blY = r.y + r.h;            // bottom-left corner
 
   noStroke(); fill('rgba(200,16,46,0.07)');
   beginShape();
-  vertex(trX, trY); vertex(p.x, p.y); vertex(brX, brY);
+  vertex(tlX, tlY); vertex(p.x, p.y); vertex(blX, blY);
   endShape(CLOSE);
 
   stroke(RED); strokeWeight(1);
-  line(trX, trY, p.x, p.y);
-  line(brX, brY, p.x, p.y);
+  line(tlX, tlY, p.x, p.y);
+  line(blX, blY, p.x, p.y);
 }
 
 function drawVideoFrame(p, r) {
@@ -273,7 +273,6 @@ function drawTimeAxis() {
   textAlign(CENTER, TOP);    text('11:59 PM', timeX, trackBot + 6);
 }
 
-// caption + post-time marker for the active point
 // wrap a caption to a pixel width: honours existing line breaks, wraps long lines by word,
 // and hard-breaks any single run that is itself wider than the box (long no-space strings)
 function wrapLines(str, maxW) {
@@ -322,7 +321,7 @@ function drawActiveMeta(p) {
     textWeight(550);
     textSize(12); textLeading(18);
     const pad = CAPTION_PAD, leading = 18;
-    const boxLeft = (imgRect.x - FRAME_MAP_GAP) - imgRect.h * VIDEO_SCALE;   // landscape clip's left edge
+    const boxLeft = imgRect.x + imgRect.w + FRAME_MAP_GAP;   // video's left edge (right of the map)
     const boxTop  = imgRect.y;                                               // line up with the map's top edge
     const lines = wrapLines(meta.caption, CAPTION_W);
     let maxW = 0;
