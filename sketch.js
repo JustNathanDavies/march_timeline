@@ -9,7 +9,7 @@
 const ROUTE_FILE  = 'UTK_Route_New.geojson';
 const POINTS_FILE = 'Video_positions.geojson';
 const VIDEO_DIR   = 'CSV_Videos/';   // folder holding the {id}.mp4 clips (must match exactly)
-const MAP_FILE    = 'map_image.png'; // basemap exported from QGIS (EPSG:7405)
+const MAP_FILE    = 'map_image2.png'; // basemap exported from QGIS (EPSG:7405)
 
 // basemap geographic extent (BNG metres), from map_image.pgw
 const MAP_MINX = 529660.4693, MAP_MAXX = 530859.5843;
