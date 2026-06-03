@@ -59,7 +59,7 @@ let basemap = null;
 let imgRect = null;     // where the basemap is drawn, in pixels
 
 async function setup() {
-  createCanvas(windowWidth, windowHeight);     // <- swap for createCanvas(800,600) for a fixed size
+  createCanvas(1000, 700);     // <- swap for createCanvas(800,600) for a fixed size
 
   basemap = await loadImage(MAP_FILE);
   const route = await loadJSON(ROUTE_FILE);
@@ -90,7 +90,7 @@ async function setup() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(1000, 700);
   if (geo.length) layout();
 }
 
